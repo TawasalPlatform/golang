@@ -1,16 +1,15 @@
-#
-<div align="center">
+<div style="margin: 40px 0" align="center">
   <a href="https://tawasal.ae/">
     <img src="https://tawasal.ae/tawasal_logo_full.png" width="300" height="auto" alt="Tawasal"/>
   </a>
 </div>
-
 <hr />
 
-<p align="center">
-<a href="https://platform.tawasal.ae"><b>check our Documentation 👉 platform.tawasal.ae</b></a><br />
-</p>
-
+<div align="center">
+    <p align="center">
+        <a href="https://platform.tawasal.ae"><b>check our Documentation 👉 platform.tawasal.ae</b></a><br />
+    </p>
+</div>
 <hr />
 
 # Tawasal SDK for Go
@@ -32,7 +31,7 @@ go get github.com/TawasalPlatform/golang
 In your Go code, import the Tawasal SDK package:
 
 ```go
-import "github.com/TawasalPlatform/golang"
+import tawasal "github.com/TawasalPlatform/golang"
 ```
 
 ### Functions Provided by the SDK
@@ -43,16 +42,16 @@ Extracts and decodes the user information from a provided cookie.
 
 ```go
 import (
-	"github.com/TawasalPlatform/golang"
+    tawasal "github.com/TawasalPlatform/golang"
 )
 
 func main() {
-	cookie := "your_encoded_cookie_here"
-	user, err := tawasal.GetUser(cookie)
-	if err != nil {
-		log.Fatalf("Error getting user: %v", err)
-	}
-	fmt.Printf("User: %+v\n", user)
+    cookie := "your_encoded_cookie_here"
+    user, err := tawasal.GetUser(cookie)
+    if err != nil {
+        log.Fatalf("Error getting user: %v", err)
+    }
+    fmt.Printf("User: %+v\n", user)
 }
 ```
 
@@ -62,16 +61,16 @@ Generates an authorization token from the provided cookie.
 
 ```go
 import (
-	"github.com/TawasalPlatform/golang"
+    tawasal "github.com/TawasalPlatform/golang"
 )
 
 func main() {
-	cookie := "your_encoded_cookie_here"
-	authToken, err := tawasal.GetAuthorization(cookie)
-	if err != nil {
-		log.Fatalf("Error getting authorization token: %v", err)
-	}
-	fmt.Printf("Authorization Token: %s\n", authToken)
+    cookie := "your_encoded_cookie_here"
+    authToken, err := tawasal.GetAuthorization(cookie)
+    if err != nil {
+        log.Fatalf("Error getting authorization token: %v", err)
+    }
+    fmt.Printf("Authorization Token: %s\n", authToken)
 }
 ```
 
@@ -81,16 +80,16 @@ Extracts the device token from the provided cookie.
 
 ```go
 import (
-	"github.com/TawasalPlatform/golang"
+    tawasal "github.com/TawasalPlatform/golang"
 )
 
 func main() {
-	cookie := "your_encoded_cookie_here"
-	deviceToken, err := tawasal.GetDeviceToken(cookie)
-	if err != nil {
-		log.Fatalf("Error getting device token: %v", err)
-	}
-	fmt.Printf("Device Token: %s\n", deviceToken)
+    cookie := "your_encoded_cookie_here"
+    deviceToken, err := tawasal.GetDeviceToken(cookie)
+    if err != nil {
+        log.Fatalf("Error getting device token: %v", err)
+    }
+    fmt.Printf("Device Token: %s\n", deviceToken)
 }
 ```
 
@@ -104,7 +103,7 @@ package main
 import (
 	"fmt"
 	"log"
-	"github.com/TawasalPlatform/golang"
+	tawasal "github.com/TawasalPlatform/golang"
 )
 
 func main() {
@@ -141,7 +140,7 @@ Extracts and decodes the user information from a provided cookie.
 
 #### Parameters
 
-- `cookie`: A raw string representing the cookie from which user information is to be extracted.
+- `cookie` : A raw string representing the cookie from which user information is to be extracted.
 
 #### Returns
 
@@ -154,7 +153,7 @@ Generates an authorization token from the provided cookie.
 
 #### Parameters
 
-- `cookie`: A raw string representing the cookie from which the authorization token is to be extracted.
+- `cookie` : A raw string representing the cookie from which the authorization token is to be extracted.
 
 #### Returns
 
@@ -166,7 +165,7 @@ Extracts the device token from the provided cookie.
 
 #### Parameters
 
-- `cookie`: A raw string representing the cookie from which the device token is to be extracted.
+- `cookie` : A raw string representing the cookie from which the device token is to be extracted.
 
 #### Returns
 
@@ -175,7 +174,3 @@ Extracts the device token from the provided cookie.
 ## License
 
 This project is licensed under the MIT License.
-
----
-
-This README provides an overview of how to use the Tawasal SDK in a Go application. Adjust the import paths and package names as necessary to match your project's structure.
