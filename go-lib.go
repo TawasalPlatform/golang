@@ -92,10 +92,14 @@ func GetDeviceToken(cookie string) (string, error) {
 // Returns: A boolean indicating if the session is legitimate and an error if any.
 func CheckSignature(userId int, authKeyId, deviceToken, signatureBase64, publicKey string) (bool, error) {
 	// Decode the base64 signature
-	signature, err := base64.StdEncoding.DecodeString(signatureBase64)
+	signature, err := base64.URLEncoding.DecodeString(fixBase64Padding(signatureBase64))
 	if err != nil {
-		return false, fmt.Errorf("failed to decode base64 signature: %v", err)
+		return false, fmt.Errorf("failed to decode base64 signature: %w", err)
 	}
+
+	// Prepare the data to be verified
+	data := fmt.Sprintf("%d%s%s", userId, authKeyId, deviceToken)
+	hashed := sha256.Sum256([]byte(data))
 
 	// Decode the public key
 	block, _ := pem.Decode([]byte(publicKey))
@@ -103,28 +107,20 @@ func CheckSignature(userId int, authKeyId, deviceToken, signatureBase64, publicK
 		return false, errors.New("failed to decode PEM block containing public key")
 	}
 
-	pub, err := x509.ParsePKIXPublicKey(block.Bytes)
+	pubKey, err := x509.ParsePKIXPublicKey(block.Bytes)
 	if err != nil {
-		return false, fmt.Errorf("failed to parse public key: %v", err)
+		return false, fmt.Errorf("failed to parse public key: %w", err)
 	}
 
-	rsaPub, ok := pub.(*rsa.PublicKey)
+	rsaPubKey, ok := pubKey.(*rsa.PublicKey)
 	if !ok {
-		return false, errors.New("public key is not of type RSA")
+		return false, errors.New("not an RSA public key")
 	}
-
-	// Create the data to be verified
-	data := []byte(fmt.Sprintf("%d%s%s", userId, authKeyId, deviceToken))
-
-	// Create a SHA256 hash of the data
-	hash := sha256.New()
-	hash.Write(data)
-	hashed := hash.Sum(nil)
 
 	// Verify the signature
-	err = rsa.VerifyPKCS1v15(rsaPub, crypto.SHA256, hashed, signature)
+	err = rsa.VerifyPKCS1v15(rsaPubKey, crypto.SHA256, hashed[:], signature)
 	if err != nil {
-		return false, nil
+		return false, err
 	}
 
 	return true, nil
