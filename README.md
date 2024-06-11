@@ -97,18 +97,7 @@ func main() {
 }
 ```
 
-#### CheckSignature( userId: number, authKeyId: string, deviceToken: string, signatureBase64: string, publicKey: string)
-This function verifies user.
-
-- **Parameters**:
-    - `userId`: id of the tawasal user,
-    - `authKeyId`: key of authorisation, second part of user token,
-    - `deviceToken`: the token describing session on given device,
-    - `signatureBase64`: first part od user token,
-    - `publicKey`: the key that will be obtained in Dev Management
-- **Returns**: A boolean that says if session are legit.
-
-**Example**:
+#### `CheckSignature` 
 
 ```go
 package main
@@ -218,6 +207,20 @@ func main() {
 ```
 
 ## API Reference
+
+### `CheckSignature`
+
+This function verifies user.
+
+#### Parameters
+  - `userId` : id of the tawasal user,
+  - `authKeyId` : key of authorisation, second part of user token,
+  - `deviceToken` : the token describing session on given device,
+  - `signatureBase64` : first part od user token,
+  - `publicKey` : the key that will be obtained in Dev Management
+
+#### Returns
+- A boolean that says if session are legit.
 
 ### `GetUser`
 
