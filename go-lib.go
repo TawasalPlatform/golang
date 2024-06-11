@@ -1,8 +1,14 @@
 package tawasal
 
 import (
+	"crypto"
+	"crypto/rsa"
+	"crypto/sha256"
+	"crypto/x509"
 	"encoding/base64"
 	"encoding/json"
+	"encoding/pem"
+	"errors"
 	"fmt"
 	"strings"
 )
@@ -74,4 +80,52 @@ func GetDeviceToken(cookie string) (string, error) {
 	}
 
 	return tokenParts[2], nil
+}
+
+// CheckSignature verifies the user session based on provided parameters.
+// Parameters:
+// - userId: ID of the tawasal user
+// - authKeyId: Key of authorization, second part of user token
+// - deviceToken: The token describing session on given device
+// - signatureBase64: First part of user token
+// - publicKey: The key obtained in Dev Management
+// Returns: A boolean indicating if the session is legitimate and an error if any.
+func CheckSignature(userId int, authKeyId, deviceToken, signatureBase64, publicKey string) (bool, error) {
+	// Decode the base64 signature
+	signature, err := base64.StdEncoding.DecodeString(signatureBase64)
+	if err != nil {
+		return false, fmt.Errorf("failed to decode base64 signature: %v", err)
+	}
+
+	// Decode the public key
+	block, _ := pem.Decode([]byte(publicKey))
+	if block == nil || block.Type != "PUBLIC KEY" {
+		return false, errors.New("failed to decode PEM block containing public key")
+	}
+
+	pub, err := x509.ParsePKIXPublicKey(block.Bytes)
+	if err != nil {
+		return false, fmt.Errorf("failed to parse public key: %v", err)
+	}
+
+	rsaPub, ok := pub.(*rsa.PublicKey)
+	if !ok {
+		return false, errors.New("public key is not of type RSA")
+	}
+
+	// Create the data to be verified
+	data := []byte(fmt.Sprintf("%d%s%s", userId, authKeyId, deviceToken))
+
+	// Create a SHA256 hash of the data
+	hash := sha256.New()
+	hash.Write(data)
+	hashed := hash.Sum(nil)
+
+	// Verify the signature
+	err = rsa.VerifyPKCS1v15(rsaPub, crypto.SHA256, hashed, signature)
+	if err != nil {
+		return false, nil
+	}
+
+	return true, nil
 }

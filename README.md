@@ -79,17 +79,102 @@ func main() {
 Extracts the device token from the provided cookie.
 
 ```go
+package main
+
 import (
-    tawasal "github.com/TawasalPlatform/golang"
+	"fmt"
+	tawasal "github.com/TawasalPlatform/golang"
+	"log"
 )
 
 func main() {
-    cookie := "your_encoded_cookie_here"
-    deviceToken, err := tawasal.GetDeviceToken(cookie)
-    if err != nil {
-        log.Fatalf("Error getting device token: %v", err)
-    }
-    fmt.Printf("Device Token: %s\n", deviceToken)
+	cookie := "your_encoded_cookie_here"
+	deviceToken, err := tawasal.GetDeviceToken(cookie)
+	if err != nil {
+		log.Fatalf("Error getting device token: %v", err)
+	}
+	fmt.Printf("Device Token: %s\n", deviceToken)
+}
+```
+
+#### CheckSignature( userId: number, authKeyId: string, deviceToken: string, signatureBase64: string, publicKey: string)
+This function verifies user.
+
+- **Parameters**:
+    - `userId`: id of the tawasal user,
+    - `authKeyId`: key of authorisation, second part of user token,
+    - `deviceToken`: the token describing session on given device,
+    - `signatureBase64`: first part od user token,
+    - `publicKey`: the key that will be obtained in Dev Management
+- **Returns**: A boolean that says if session are legit.
+
+**Example**:
+
+```go
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+	"net/http"
+	tawasal "github.com/TawasalPlatform/golang"
+	"strings"
+)
+
+// User struct to hold user data
+type User struct {
+	UserID       int    `json:"userId"`
+	UserToken    string `json:"userToken"`
+	FirstName    string `json:"firstName"`
+	LastName     string `json:"lastName"`
+	UserNickname string `json:"userNickname"`
+	Language     string `json:"language"`
+	Platform     string `json:"platform"`
+	Version      string `json:"version"`
+}
+
+func main() {
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		// Get the cookie
+		cookie, err := r.Cookie("tawasal")
+		if err != nil {
+			http.Error(w, "Cookie not found", http.StatusBadRequest)
+			return
+		}
+
+		// Get the user information from the cookie
+		user, err := tawasal.GetUser(cookie.Value)
+		if err != nil {
+			http.Error(w, "Failed to get user from cookie", http.StatusInternalServerError)
+			return
+		}
+
+		if user.UserToken != "" {
+			tokenParts := strings.Split(user.UserToken, ":")
+			if len(tokenParts) != 4 {
+				http.Error(w, "Invalid token format", http.StatusBadRequest)
+				return
+			}
+
+			signature := tokenParts[0]
+			authKeyId := tokenParts[1]
+			deviceToken := tokenParts[2]
+			publicKey := `-----BEGIN PUBLIC KEY----------END PUBLIC KEY-----` // will be obtained at Dev Managment
+
+			result, err := tawasal.CheckSignature(user.UserID, authKeyId, deviceToken, signature, publicKey)
+			if err != nil {
+				http.Error(w, "Failed to check signature", http.StatusInternalServerError)
+				return
+			}
+
+			fmt.Fprintf(w, "Signature valid: %v", result)
+		} else {
+			http.Error(w, "User token not found", http.StatusBadRequest)
+		}
+	})
+
+	fmt.Println("Server is running on port 8080")
+	http.ListenAndServe(":8080", nil)
 }
 ```
 
